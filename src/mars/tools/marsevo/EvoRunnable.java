@@ -26,6 +26,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.JSeparator;
 import java.awt.Color;
 import javax.swing.border.LineBorder;
@@ -74,7 +75,7 @@ public class EvoRunnable extends JFrame implements Runnable
 	{
 		setTitle("MARS Evo - " + MARSEvo.getToolVersion());
 		setResizable(false);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		setBounds(100, 100, 542, 710);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
