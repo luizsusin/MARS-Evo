@@ -25,6 +25,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import java.awt.Font;
+import java.awt.Point;
+
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.JSeparator;
@@ -32,7 +34,6 @@ import java.awt.Color;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import javafx.geometry.Point2D;
 import mars.Globals;
 import mars.tools.MARSEvo;
 import mars.tools.marsevo.util.EvoPoint;
@@ -73,16 +74,16 @@ public class EvoRunnable extends JFrame implements Runnable
 	 */
 	public EvoRunnable() 
 	{
-		setTitle("MARS Evo - " + MARSEvo.getToolVersion());
+		setTitle("MARS Evo " + MARSEvo.getToolVersion());
 		setResizable(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-		setBounds(100, 100, 542, 710);
+		setBounds(100, 100, 552, 720);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblMarsEvo = new JLabel("<html><b>MARS Evo</b><font size=\"2\"><i> " + MARSEvo.getToolVersion() + " - The evolution of Mars Bot</i></font>");
+		JLabel lblMarsEvo = new JLabel("<html><b>MARS Evo</b><font size=\"2\"><i> " + MARSEvo.getToolVersion() + "</i></font>");
 		lblMarsEvo.setHorizontalAlignment(SwingConstants.CENTER);
 		lblMarsEvo.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		lblMarsEvo.setBounds(12, 12, 512, 25);
@@ -95,6 +96,7 @@ public class EvoRunnable extends JFrame implements Runnable
 		
 		workspace = new MarsEvoPanel();
 		workspace.setBackground(Color.WHITE);
+		workspace.setDoubleBuffered(true);
 		workspace.setBorder(new LineBorder(Color.GRAY));
 		workspace.setBounds(12, 49, 512, 480);
 		contentPane.add(workspace);
@@ -121,8 +123,9 @@ public class EvoRunnable extends JFrame implements Runnable
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				MARSEvo.setPosition(new Point2D(0, 0));
+				MARSEvo.setPosition(new Point(0, 0));
 				MARSEvo.getEvoPoints().clear();
+				EvoRunnable.updatePositionSettings(new Point(0, 0));
 				workspace.repaint();
 			}
 		});
@@ -197,7 +200,7 @@ public class EvoRunnable extends JFrame implements Runnable
 		separator_2.setBounds(0, 662, 542, 2);
 		contentPane.add(separator_2);
 		
-		JLabel lblMarsEvoCredits = new JLabel("<html><b>MARS Evo [Rev 1.0]</b> - Developed by Luiz H. Susin (<a href=\"https://github.com/luizsusin\" target=\"_blank\">@luizsusin</a>)</html>");
+		JLabel lblMarsEvoCredits = new JLabel("<html><b>MARS Evo " + MARSEvo.getToolVersion() + "</b> - Developed by Luiz H. Susin (<a href=\"https://github.com/luizsusin\" target=\"_blank\">@luizsusin</a>)</html>");
 		lblMarsEvoCredits.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		lblMarsEvoCredits.setHorizontalAlignment(SwingConstants.CENTER);
 		lblMarsEvoCredits.setBounds(12, 664, 512, 16);
@@ -211,38 +214,41 @@ public class EvoRunnable extends JFrame implements Runnable
 	public void run() 
 	{
 		double headingAngle;
-		Point2D position;
+		Point position;
 		int posX, posY;
 		
 		while(true)
 		{
-			if(MARSEvo.isBotMoving())
+			synchronized(this)
 			{
-				try
+				if(MARSEvo.isBotMoving())
 				{
-					headingAngle = ((360 - MARSEvo.getBotHeading()) + 90) % 360;
-					position = MARSEvo.getPosition();
-					
-					posX = (int) (position.getX() + Math.cos(Math.toRadians(headingAngle)));
-					posY = (int) (position.getY() - Math.sin(Math.toRadians(headingAngle)));
-					
-					Globals.memory.setWord(MARSEvo.ADDR_XPOS, posX);
-					Globals.memory.setWord(MARSEvo.ADDR_YPOS, posY);
-					
-					MARSEvo.setPosition(new Point2D(posX, posY));
-					updatePositionSettings(position);
-					
-					if(MARSEvo.isBotPaiting())
-						MARSEvo.getEvoPoints().add(new EvoPoint(MARSEvo.getPosition(), MARSEvo.getMarkColor()));
-					
-					workspace.repaint();
-					
-					Thread.sleep(1000 / speedSlider.getValue());
+					try
+					{
+						headingAngle = ((360 - MARSEvo.getBotHeading()) + 90) % 360;
+						position = MARSEvo.getPosition();
+						
+						posX = (int) (position.getX() + Math.cos(Math.toRadians(headingAngle)));
+						posY = (int) (position.getY() - Math.sin(Math.toRadians(headingAngle)));
+						
+						Globals.memory.setWord(MARSEvo.ADDR_XPOS, posX);
+						Globals.memory.setWord(MARSEvo.ADDR_YPOS, posY);
+						
+						MARSEvo.setPosition(new Point(posX, posY));
+						updatePositionSettings(position);
+						
+						if(MARSEvo.isBotPaiting())
+							MARSEvo.getEvoPoints().add(new EvoPoint(MARSEvo.getPosition(), MARSEvo.getMarkColor()));
+						
+						workspace.repaint();
+						
+						Thread.sleep(1000 / speedSlider.getValue());
+					}
+					catch(Exception e) { e.printStackTrace(); }
 				}
-				catch(Exception e) { e.printStackTrace(); }
+				
+				updateSpeedLocally();
 			}
-			
-			updateSpeedLocally();
 		}
 	}
 	
@@ -250,7 +256,7 @@ public class EvoRunnable extends JFrame implements Runnable
 	 * Updates the position of the MARS Evo
 	 * @param position (Point2D)
 	 */
-	public static void updatePositionSettings(Point2D position)
+	public static void updatePositionSettings(Point position)
 	{
 		lblXPos.setText("<html><b>X Pos: </b>" + (int) position.getX() + "</html>");
 		lblYPos.setText("<html><b>Y Pos: </b>" + (int) position.getY() + "</html>");

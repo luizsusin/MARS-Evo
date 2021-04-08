@@ -21,12 +21,13 @@
 package mars.tools;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import javafx.geometry.Point2D;
 import mars.Globals;
 import mars.mips.hardware.AccessNotice;
 import mars.mips.hardware.MemoryAccessNotice;
@@ -77,7 +78,7 @@ public class MARSEvo implements MarsTool, Observer
 	private static int x = 0, y = 0;
 	
 	/** List of points to mark using EvoPoint */
-	private static List<EvoPoint> evoPoints = new ArrayList<EvoPoint>();
+	private static List<EvoPoint> evoPoints = Collections.synchronizedList(new ArrayList<EvoPoint>());
 	
 	/** Is the bot moving */
 	private static boolean botMoving = false;
@@ -107,7 +108,7 @@ public class MARSEvo implements MarsTool, Observer
 	 */
 	public static String getToolVersion() 
 	{
-		return "Rev 1.0";
+		return "v1.0";
 	}
 	
 	/**
@@ -144,18 +145,18 @@ public class MARSEvo implements MarsTool, Observer
 	}
 	
 	/**
-	 * Using Point2D to specify the Cartesian position
-	 * @return A Point2D with the position X and Y
+	 * Using Point to specify the Cartesian position
+	 * @return A Point with the position X and Y
 	 */
-	public static Point2D getPosition()
+	public static Point getPosition()
 	{
-		return new Point2D(x, y);
+		return new Point(x, y);
 	}
 	
 	/**
-	 * Using Point2D to specify the Cartesian position
+	 * Using Point to specify the Cartesian position
 	 */
-	public static void setPosition(Point2D position)
+	public static void setPosition(Point position)
 	{
 		x = (int) position.getX();
 		y = (int) position.getY();
@@ -188,7 +189,7 @@ public class MARSEvo implements MarsTool, Observer
 	/**
 	 * Get the list of EvoPoints to mark
 	 */
-	public static List<EvoPoint> getEvoPoints()
+	public synchronized static List<EvoPoint> getEvoPoints()
 	{
 		return evoPoints;
 	}
@@ -282,7 +283,10 @@ public class MARSEvo implements MarsTool, Observer
 					if (address == MARSEvo.ADDR_PAINT)
 					{
 						if (notice.getValue() == 1)
+						{
 							MARSEvo.botPainting = true;
+							MARSEvo.getEvoPoints().add(new EvoPoint(MARSEvo.getPosition(), MARSEvo.getMarkColor()));
+						}
 						else MARSEvo.botPainting = false;
 					}
 				}

@@ -21,27 +21,26 @@
 package mars.tools.marsevo.util;
 
 import java.awt.Color;
-
-import javafx.geometry.Point2D;
+import java.awt.Point;
 
 /**
- * Used to save Point2D and Color into a List
+ * Used to save Point and Color into a List
  * @author Luiz H. Susin
  * @date 01/10/2018
  * @time 01:38 AM
  */
 public class EvoPoint
 {
-	private Point2D position;
+	private Point position;
 	private Color color;
 	
-	public EvoPoint(Point2D position, Color color)
+	public EvoPoint(Point position, Color color)
 	{
 		this.position = position;
 		this.color = color;
 	}
 	
-	public Point2D getPosition()
+	public Point getPosition()
 	{
 		return position;
 	}
@@ -51,7 +50,7 @@ public class EvoPoint
 		return color;
 	}
 	
-	public void setPosition(Point2D position)
+	public void setPosition(Point position)
 	{
 		this.position = position;
 	}

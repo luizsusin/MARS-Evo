@@ -23,10 +23,11 @@ package mars.tools.marsevo.util;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.util.Iterator;
 
 import javax.swing.JPanel;
 
-import javafx.geometry.Point2D;
 import mars.tools.MARSEvo;
 
 /**
@@ -34,10 +35,9 @@ import mars.tools.MARSEvo;
  * @date 01/10/2018
  * @time 12:23 AM
  */
+@SuppressWarnings("serial")
 public class MarsEvoPanel extends JPanel 
 {
-	private static final long serialVersionUID = -3800239631962531334L;
-	
 	public MarsEvoPanel() { }
 
 	@Override
@@ -47,15 +47,20 @@ public class MarsEvoPanel extends JPanel
 		
 		Graphics2D g2 = (Graphics2D) g;
 		
-		for(EvoPoint evoPoint : MARSEvo.getEvoPoints())
+		synchronized(MARSEvo.getEvoPoints())
 		{
-			Point2D evoPos = evoPoint.getPosition();
-			
-			g2.setColor(evoPoint.getColor());
-			g2.fillRect((int) evoPos.getX(), (int) evoPos.getY(), 1, 1);
+			for(Iterator<EvoPoint> evoPoints = MARSEvo.getEvoPoints().iterator(); evoPoints.hasNext();)
+			{
+				EvoPoint evoPoint = evoPoints.next();
+				
+				Point evoPos = evoPoint.getPosition();
+				
+				g2.setColor(evoPoint.getColor());
+				g2.drawRect((int) evoPos.getX(), (int) evoPos.getY(), 1, 1);
+			}
 		}
 		
-		Point2D position = MARSEvo.getPosition();
+		Point position = MARSEvo.getPosition();
 		
 		g2.setColor(Color.black);
 		g2.fillRect((int) position.getX(), (int) position.getY(), 20, 20);
