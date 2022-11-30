@@ -102,7 +102,7 @@ To change the color that the printhead is printing, you must set the R, G and B 
     sw $t3,0($s0) # Sets the value in the $s0 (stored address) to the value of the $t3 registrator
 ```
 
-The result will be the shown as the following color in the MARS Evo interface:
+The result will be shown as the following color in the MARS Evo interface:
 
 ![MARS Evo color](https://i.imgur.com/zvbq4QT.png)
 
